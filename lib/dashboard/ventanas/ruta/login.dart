@@ -1,16 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_travel/login/login.dart';
+import 'package:flutter_travel/dashboard/dashboard.dart';
+import 'package:flutter_travel/login/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _LoginPageState extends State<LoginPage> {
   late Color myColor;
   late Size mediaSize;
   TextEditingController emailController = TextEditingController();
@@ -25,7 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
       decoration: BoxDecoration(
         color: myColor,
         image: DecorationImage(
-          image: const AssetImage('assets/login.jpg'),
+          image: const AssetImage("assets/login.jpg"),
           fit: BoxFit.cover,
           colorFilter:
               ColorFilter.mode(myColor.withOpacity(0.2), BlendMode.dstATop),
@@ -87,28 +88,24 @@ class _RegisterPageState extends State<RegisterPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "REGISTRO",
+          "Bienvenido",
           style: TextStyle(
               color: myColor, fontSize: 32, fontWeight: FontWeight.w500),
         ),
-        _buildGreyText("Registra tu informacion"),
-        const SizedBox(height: 40),
-        /*_buildGreyText("Usuario "),
-        _buildInputField(emailController),*/
-        const SizedBox(height: 20),
+        _buildGreyText("Logeate con tu informacion"),
+        const SizedBox(height: 60),
         _buildGreyText("Email "),
         _buildInputField(emailController),
-        const SizedBox(height: 30),
+        const SizedBox(height: 40),
         _buildGreyText("Contraseña"),
         _buildInputField(passwordController, isPassword: true),
         const SizedBox(height: 30),
         //_buildRememberForgot(),
+        const SizedBox(height: 20),
+        _buildLoginButton(),
 
         const SizedBox(height: 20),
         _buildRegister(),
-
-        const SizedBox(height: 20),
-        _buildLoginButton(),
 
         const SizedBox(height: 20),
         //_buildOtherLogin(),
@@ -157,22 +154,6 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Widget _buildLoginButton() {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const LoginPage()));
-      },
-      style: ElevatedButton.styleFrom(
-        shape: const StadiumBorder(),
-        elevation: 20,
-        shadowColor: myColor,
-        minimumSize: const Size.fromHeight(50),
-      ),
-      child: const Text("Ya tienes cuenta?"),
-    );
-  }
-
-  Widget _buildRegister() {
     final FirebaseAuth _auth = FirebaseAuth.instance;
 
     return ElevatedButton(
@@ -182,37 +163,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
         try {
           UserCredential userCredential =
-              await _auth.createUserWithEmailAndPassword(
+              await _auth.signInWithEmailAndPassword(
             email: emailController.text,
             password: passwordController.text,
           );
 
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const LoginPage()));
-
-          debugPrint("User: ${userCredential.user}");
+          // ignore: use_build_context_synchronously
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const BottomNavigationBarExampleApp()));
         } on FirebaseAuthException catch (e) {
-          String errorMessage;
-          if (e.code == 'weak-password') {
-            errorMessage = 'La contraseña proporcionada es demasiado débil.';
-          } else if (e.code == 'email-already-in-use') {
-            errorMessage = 'La cuenta ya existe para ese correo electrónico.';
-          } else {
-            errorMessage = 'Ingresa tus datos por favor';
+          if (e.code == 'user-not-found') {
+            debugPrint('No user found for that email.');
+          } else if (e.code == 'wrong-password') {
+            debugPrint('Wrong password provided for that user.');
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMessage),
-              backgroundColor: Colors.red,
-            ),
-          );
-        } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Ocurrió un error inesperado.'),
-              backgroundColor: Colors.red,
-            ),
-          );
         }
       },
       style: ElevatedButton.styleFrom(
@@ -221,7 +187,23 @@ class _RegisterPageState extends State<RegisterPage> {
         shadowColor: myColor,
         minimumSize: const Size.fromHeight(60),
       ),
-      child: const Text("Registrarse"),
+      child: const Text("LOGIN"),
+    );
+  }
+
+  Widget _buildRegister() {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const RegisterPage()));
+      },
+      style: ElevatedButton.styleFrom(
+        shape: const StadiumBorder(),
+        elevation: 20,
+        shadowColor: myColor,
+        minimumSize: const Size.fromHeight(50),
+      ),
+      child: const Text("No tienes cuenta?"),
     );
   }
 

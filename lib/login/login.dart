@@ -161,6 +161,16 @@ class _LoginPageState extends State<LoginPage> {
         debugPrint("Email : ${emailController.text}");
         debugPrint("Password : ${passwordController.text}");
 
+        if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Por favor, ingrese sus datos.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
         try {
           UserCredential userCredential =
               await _auth.signInWithEmailAndPassword(
@@ -168,17 +178,25 @@ class _LoginPageState extends State<LoginPage> {
             password: passwordController.text,
           );
 
-          // ignore: use_build_context_synchronously
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => const BottomNavigationBarExampleApp()));
         } on FirebaseAuthException catch (e) {
+          String errorMessage;
           if (e.code == 'user-not-found') {
-            debugPrint('No user found for that email.');
+            errorMessage = 'Usuario no registrado.';
           } else if (e.code == 'wrong-password') {
-            debugPrint('Wrong password provided for that user.');
+            errorMessage = 'Usuario y/o contraseña incorrecta.';
+          } else {
+            errorMessage = 'Credneciales incorrectas.';
           }
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
       },
       style: ElevatedButton.styleFrom(
